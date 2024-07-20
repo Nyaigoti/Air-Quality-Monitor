@@ -2,14 +2,15 @@
 #define BLYNK_TEMPLATE_NAME "Air Quality Monitor"
 #define BLYNK_AUTH_TOKEN "MlvW-ihqxg2MbZ0PvS8CF7UwX2HXf-XD"
 
-#define BLYNK_PRINT serial
-#include <wifi.h>    //esp32 wifi connection header file
+#define BLYNK_PRINT Serial
+#include <WiFi.h>    //esp32 wifi connection header file
 #include <BlynkSimpleEsp32.h> //Blynk esp32 header file
 
 #include <DHT.h>    
-#include <wire.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 
-LiquidCryystal_I2C lcd(0x27, 16, 2);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
 byte degree_symbol[8] = {
                 0b00111,
                 0b00101,
@@ -26,7 +27,7 @@ char auth[] = BLYNK_AUTH_TOKEN;
 char ssid[] = "<GOATY>";
 char pass[] = "Nyai_the_lion99";
 
-BlinkTimer timer;
+BlynkTimer timer;
 
 int gas = A0;   //mq2 pin no
 int sensorThreshold = 100;
@@ -47,12 +48,12 @@ if(isnan(t) || isnan(h)){
 }
 
 int analogSensor = analogRead(gas);
-Blynk.virtualWrite(v2, analogSensor);
+Blynk.virtualWrite(V2, analogSensor);
 Serial.print("Gas value: ");
 Serial.print(analogSensor);
 
-Blynk.virtualWrite(v0, t);
-Blynk.virtualWrite(v1, h);
+Blynk.virtualWrite(V0, t);
+Blynk.virtualWrite(V1, h);
 
 }
 
@@ -65,10 +66,10 @@ void setup() {
   //pinMode(gas, INPUT);
   Blynk.begin(auth, ssid, pass);
   dht.begin();
-  timer.setTimer(30000L, sendSensor);
+  timer.setTimer(30000, sendSensor, 30);
 
   Wire.begin();
-  lcd.begin();
+  lcd.begin(16, 2); // Initialize the LCD
 
   //lcd.backlight();
   //lcd.clear();
@@ -86,8 +87,8 @@ void loop() {
   Blynk.run();
   timer.run();
 
-  float t = readTemperature();
-  float h = readHumidity();
+  float t = dht.readTemperature();
+  float h = dht.readHumidity();
   int gasValue = analogRead(gas);
 
   lcd.setCursor(0,0);
@@ -104,9 +105,9 @@ void loop() {
   lcd.setCursor(0,0);
   lcd.print("Humidity: ");
   lcd.print(h);
-  lcd.print("%")
+  lcd.print("%");
   delay(4000);
-  lcd.clear;
+  lcd.clear();
 
   if (gasValue < 600){
     lcd.setCursor(0,0);
@@ -125,7 +126,7 @@ void loop() {
     lcd.print("Bad Air");
     Serial.println("Bad Air");
     delay(4000);
-    lcd.clear;
+    lcd.clear();
   }
 
   if(gasValue > 600){
