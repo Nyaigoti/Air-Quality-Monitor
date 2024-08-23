@@ -24,13 +24,16 @@ byte degree_symbol[8] = {
             
 char auth[] = BLYNK_AUTH_TOKEN;
 
-char ssid[] = "<GOATY>";
-char pass[] = "Nyai_the_lion99";
+char ssid[] = "CDED";
+char pass[] = "CDED2024.";
 
 BlynkTimer timer;
 
 int gas = A0;   //mq2 pin no
 int sensorThreshold = 100;
+
+#define SDA_PIN 21
+#define SCL_PIN 22
 
 #define DHTPIN 2
 #define DHTTYPE DHT11
@@ -68,7 +71,7 @@ void setup() {
   dht.begin();
   timer.setTimer(30000, sendSensor, 30);
 
-  Wire.begin();
+  Wire.begin(SDA_PIN, SCL_PIN);
   lcd.begin(16, 2); // Initialize the LCD
 
   //lcd.backlight();
